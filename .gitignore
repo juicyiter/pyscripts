@@ -1,0 +1,7 @@
+*.setup
+*.html
+*.md
+*~
+.DS_Store
+.\#*
+*\#
