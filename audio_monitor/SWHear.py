@@ -16,8 +16,10 @@ def getFFT(data, rate):
     data=data*np.hamming(len(data))
     fft=np.fft.fft(data)
     fft=np.abs(fft)
+
     #fft=10*np.log10(fft)
     freq=np.fft.fftfreq(len(fft),1.0/rate)
+
     return freq[:int(len(freq)/2)],fft[:int(len(fft)/2)]
 
 class SWHear():
@@ -118,7 +120,9 @@ class SWHear():
         """reads some audio and re-launches itself"""
         try:
             self.data = np.fromstring(self.stream.read(self.chunk),dtype=np.int16)
+
             self.fftx, self.fft = getFFT(self.data,self.rate)
+
 
         except Exception as E:
             print(" -- exception! terminating...")
@@ -154,7 +158,7 @@ if __name__=="__main__":
     lastRead=ear.chunksRead
     while True:
         while lastRead==ear.chunksRead:
-            time.sleep(.01)
+            time.sleep(3)
         print(ear.chunksRead,len(ear.data))
         lastRead=ear.chunksRead
     print("DONE")

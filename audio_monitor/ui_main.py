@@ -56,7 +56,9 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.label_2)
         self.grPCM = PlotWidget(self.frame)
         self.grPCM.setObjectName(_fromUtf8("grPCM"))
+
         self.verticalLayout.addWidget(self.grPCM)
+
         self.horizontalLayout.addWidget(self.frame)
         MainWindow.setCentralWidget(self.centralwidget)
 
