@@ -74,9 +74,9 @@ class ExampleApp(QtGui.QMainWindow, ui_main.Ui_MainWindow):
                         count += 1
                         with open('left.txt', 'w') as f:
                             f.write("\n")
-                            f.write("{}{:^7}{}  {:^13}  {:^13} {}{:^7}{}".format(red, 'Times', origin, 'Frequency', 'Value', red, 'TIMES', origin))
+                            f.write("{:^7}  {:^13}  {:^13} {:^7}\n".format('Times', 'Frequency', 'Value', 'TIMES'))
                             for frq, frv, tq in zip(frqlist, frvlist, timeseq):
-                                f.write("%s%7d%s %12.2f  %12.2f  %s%7.2f%s" % (red, count, origin, frq, frv, red, tq, origin))
+                                f.write("%7d %12.2f  %12.2f  %7.2f\n" % (count, frq, frv, tq))
                         print("\n")
                         print("=======================================")
                         print("{}I heard that you've waved your hands!{}".format(red, origin))
