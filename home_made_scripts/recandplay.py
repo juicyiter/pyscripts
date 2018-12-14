@@ -5,9 +5,9 @@ import subprocess
 import numpy as np
 
 cumulated_status = sd.CallbackFlags()
-f1 = open('down0.txt', 'w')
-f2 = open('down1.txt', 'w')
-f3 = open('down2.txt', 'w')
+f1 = open('none0.txt', 'w')
+f2 = open('none1.txt', 'w')
+f3 = open('none2.txt', 'w')
 count = 0
 
 def show(data):
