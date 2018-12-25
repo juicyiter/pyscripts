@@ -1,0 +1,8 @@
+# ignore backup files
+\#*\#
+
+# ignore temporary files
+*~
+
+# ignore .DS_Store
+.DS_Store
