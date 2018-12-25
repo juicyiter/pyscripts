@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 #from PyQt5 import QtCore, QtGui
 
 try:
@@ -43,7 +43,7 @@ class Ui_MainWindow(object):
         self.frame.setFrameShadow(QtGui.QFrame.Plain)
         self.frame.setObjectName(_fromUtf8("frame"))
         self.verticalLayout = QtGui.QVBoxLayout(self.frame)
-        self.verticalLayout.setMargin(0)
+        #self.verticalLayout.setMargin(0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.label = QtGui.QLabel(self.frame)
         self.label.setObjectName(_fromUtf8("label"))
@@ -56,9 +56,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addWidget(self.label_2)
         self.grPCM = PlotWidget(self.frame)
         self.grPCM.setObjectName(_fromUtf8("grPCM"))
-
         self.verticalLayout.addWidget(self.grPCM)
-
         self.horizontalLayout.addWidget(self.frame)
         MainWindow.setCentralWidget(self.centralwidget)
 

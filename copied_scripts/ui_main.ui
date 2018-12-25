@@ -60,6 +60,9 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="PlotWidget" name="grPCM"/>
+       </item>
       </layout>
      </widget>
     </item>
