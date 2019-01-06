@@ -14,7 +14,7 @@ X = np.array([[1, 2],
 # plt.scatter(X[:, 0], X[:, 1], s=150)
 # plt.show()
 
-clf = KMeans(n_clusters = 6)
+clf = KMeans(n_clusters=6)
 clf.fit(X)
 
 centroids = clf.cluster_centers_

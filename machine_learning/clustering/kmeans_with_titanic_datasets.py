@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-from matplotlib import style
-style.use('ggplot')
 from sklearn.cluster import KMeans
 import numpy as np
 from sklearn import preprocessing
@@ -38,6 +35,7 @@ def handle_non_numeric_data(df):
     for column in columns:
         # 'Female': 0
         text_digit_values = {}
+
         def convert_to_int(val):
             return text_digit_values[val]
 
@@ -53,6 +51,7 @@ def handle_non_numeric_data(df):
             df[column] = list(map(convert_to_int, df[column]))
 
     return df
+
 
 df = handle_non_numeric_data(df)
 

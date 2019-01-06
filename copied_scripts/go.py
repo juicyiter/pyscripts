@@ -41,6 +41,11 @@ class ExampleApp(QtGui.QMainWindow, ui_main.Ui_MainWindow):
                             clear=True)
 
             pen = pyqtgraph.mkPen(color='r')
+            print()
+            print(self.ear.fftx, len(self.ear.fftx))
+            print(self.ear.data, len(self.ear.data))
+            print(self.ear.fft/self.maxFFT, len(self.ear.fft))
+            print()
             self.grFFT.plot(self.ear.fftx,
                             self.ear.fft/self.maxFFT,
                             pen=pen,
