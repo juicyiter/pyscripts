@@ -7,9 +7,11 @@ HOMEBREW_REPOSITORY = "/usr/local/Homebrew".freeze
 HOMEBREW_CORE_TAP = "/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core".freeze
 HOMEBREW_CACHE = "#{ENV["HOME"]}/Library/Caches/Homebrew".freeze
 HOMEBREW_OLD_CACHE = "/Library/Caches/Homebrew".freeze
-BREW_REPO = "https://github.com/Homebrew/brew".freeze
+# BREW_REPO = "https://github.com/Homebrew/brew".freeze
+BREW_REPO = "git://mirrors.ustc.edu.cn/brew.git".freeze
 BREW_REPO_INSECURE = "git://github.com/Homebrew/brew.git".freeze
-CORE_TAP_REPO = "https://github.com/Homebrew/homebrew-core".freeze
+# CORE_TAP_REPO = "https://github.com/Homebrew/homebrew-core".freeze
+CORE_TAP_REPO = "git://mirrors.ustc.edu.cn/homebrew-core".freeze
 CORE_TAP_REPO_INSECURE = "git://github.com/Homebrew/homebrew-core.git".freeze
 
 # TODO: bump version when new macOS is released
