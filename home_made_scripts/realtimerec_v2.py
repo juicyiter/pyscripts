@@ -28,14 +28,14 @@ parser.add_argument(
     '-w', '--window', type=float, default=200, metavar='DURATION',
     help='visible time slot (default: %(default)s ms)')
 parser.add_argument(
-    '-i', '--interval', type=float, default=30,
+    '-i', '--interval', type=float, default=50,
     help='minimum time between plot updates (default: %(default)s ms)')
 parser.add_argument(
     '-b', '--blocksize', type=int, help='block size (in samples)')
 parser.add_argument(
     '-r', '--samplerate', type=float, help='sampling rate of audio device')
 parser.add_argument(
-    '-n', '--downsample', type=int, default=1, metavar='N',
+    '-n', '--downsample', type=int, default=10, metavar='N',
     help='display every Nth sample (default: %(default)s)')
 parser.add_argument(
     'channels', type=int, default=[1], nargs='*', metavar='CHANNEL',
@@ -101,6 +101,8 @@ def update_plot(frame):
         #     pass
         tempfreq = tempfreq[:int(len(tempfreq)/2)]
         if i == 0:
+            fft = None
+            freq = None
             fft = tempfft
             fft = fft.reshape(len(fft), 1)
             freq = tempfreq
@@ -195,7 +197,7 @@ try:
                   bbox_to_anchor=(0., 1.02, 1., .102))
 
     ax.axis((0, len(plotdata), -1, 1))
-    fx.axis((0, 44100, 0, 1))
+    fx.axis((0, 44100, 0, 5))
     # ax.set_yticks([0])
     ax.yaxis.grid(True)
     fx.yaxis.grid(True)
