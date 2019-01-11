@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 style.use('ggplot')
 
+# check out the https://pythonprogramming.net/weighted-bandwidth-mean-shift-machine-learning-tutorial/
 
 X = np.array([[1, 2],
               [1.5, 1.8],
