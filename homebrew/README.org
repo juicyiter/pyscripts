@@ -1,7 +1,0 @@
-* Install Homebrew via Chinese ISO
-
-  *Simpler and Faster*
-
-  Just paste the following code to your terminal, wait and enjoy!
-
-  ~curl -L https://git.io/fhGQP | sh~
