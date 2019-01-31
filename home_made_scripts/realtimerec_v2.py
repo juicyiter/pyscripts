@@ -197,7 +197,7 @@ try:
                   bbox_to_anchor=(0., 1.02, 1., .102))
 
     ax.axis((0, len(plotdata), -1, 1))
-    fx.axis((0, 44100, 0, 5))
+    fx.axis((0, 44100, -0.5, 1.5))
     # ax.set_yticks([0])
     ax.yaxis.grid(True)
     fx.yaxis.grid(True)
