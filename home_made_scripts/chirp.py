@@ -13,15 +13,12 @@ for device in device_list:
 
 def callback(indata, outdata, frames, time, status):
         global i
-        outdata[:, 1] = y[i:i+500]
-        i += 500
-        if i >= len(y):
-                i = 0
+        outdata[:, 1] = y
 
-with sd.Stream(device=(input_device, 0),
+with sd.Stream(device=(0, 1),
                callback=callback,
-               blocksize=500,
-               samplerate=44100):
+               blocksize=960,
+               samplerate=48000):
 	print('#' * 80)
 	print('press Return to quit')
 	print('#' * 80)
