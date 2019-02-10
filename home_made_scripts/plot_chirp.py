@@ -80,7 +80,7 @@ q = queue.Queue()
 
 def audio_callback(indata, outdata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
-    outdata = y
+    outdata = y[::3]
     if status:
         print(status, file=sys.stderr)
     # Fancy indexing with mapping creates a (necessary!) copy:
@@ -138,7 +138,7 @@ try:
 
     stream = sd.Stream(
         device=(args.device, 1), channels=max(args.channels),
-        samplerate=args.samplerate, callback=audio_callback, blocksize=960)
+        samplerate=args.samplerate, callback=audio_callback, blocksize=320)
     ani = FuncAnimation(fig, update_plot, interval=args.interval, blit=True)
 
     with stream:
