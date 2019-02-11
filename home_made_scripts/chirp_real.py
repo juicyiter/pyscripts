@@ -4,6 +4,8 @@ import sys
 import numpy as np
 from scipy.signal.waveforms import sweep_poly
 from scipy import signal
+import pickle
+import subprocess as sp
 
 
 def int_or_str(text):
@@ -13,29 +15,29 @@ def int_or_str(text):
     except ValueError:
         return text
 def generate_chirp():
-    p = np.poly1d([1.4, 16])
-    t = np.linspace(0, 5, 5*48)
+    p = np.poly1d([7, 16])
+    t = np.linspace(0, 1, 1*48)
     w = sweep_poly(t, p)
     w = np.hanning(len(w))*w
     up_chirp = np.copy(w)
 
-    p = np.poly1d([-1.4, 30])
-    t0 = np.linspace(5, 10, 5*48)
+    p = np.poly1d([-7, 30])
+    t0 = np.linspace(1, 2, 1*48)
     t = np.append(t, t0)
     w0 = sweep_poly(t0, p)
     w0 = np.hanning(len(w0))*w0
     w = np.append(w, w0)
     down_chirp = np.copy(w0)
 
-    p = np.poly1d([1.4, 2])
-    t0 = np.linspace(10, 15, 5*48)
+    p = np.poly1d([7, 2])
+    t0 = np.linspace(2, 3, 1*48)
     t = np.append(t, t0)
     w0 = sweep_poly(t0, p)
     w0 = np.hanning(len(w0))*w0
     w = np.append(w, w0)
 
-    p = np.poly1d([-1.4, 44])
-    t0 = np.linspace(15, 20, 5*48)
+    p = np.poly1d([-7, 44])
+    t0 = np.linspace(3, 4, 1*48)
     t = np.append(t, t0)
     w0 = sweep_poly(t0, p)
     w0 = np.hanning(len(w0))*w0
@@ -44,8 +46,11 @@ def generate_chirp():
 
     return w, up_chirp, down_chirp
 y, up_chirp, down_chirp = generate_chirp()
-left_y = np.append(y, np.zeros(10*48))
-right_y = np.append(np.zeros(10*48), y)
+left_y = np.append(y, np.zeros(16*48))
+pickle.dump(left_y, open('left_y.pickle', 'wb'))
+right_y = np.append(np.zeros(1*48), y)
+right_y = np.append(right_y, np.zeros(15*48))
+pickle.dump(right_y, open('right_y.pickle', 'wb'))
 
 y = y.reshape(len(y), 1)
 sos = signal.butter(10, [16000, 23000], 'bandpass', fs=48000, output='sos')
@@ -62,7 +67,7 @@ parser.add_argument(
     '-w', '--window', type=float, default=20, metavar='DURATION',
     help='visible time slot (default: %(default)s ms)')
 parser.add_argument(
-    '-i', '--interval', type=float, default=30,
+    '-i', '--interval', type=float, default=20,
     help='minimum time between plot updates (default: %(default)s ms)')
 parser.add_argument(
     '-b', '--blocksize', type=int, help='block size (in samples)')
@@ -83,24 +88,33 @@ q = queue.Queue()
 args.samplerate = 48000
 i = 0
 
-def audio_callback(indata, outdata, frames, time, status):
+def audio_callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
-    # if status:
-    #     print(status, file=sys.stderr)
+    if status:
+        print(status, file=sys.stderr)
     # Fancy indexing with mapping creates a (necessary!) copy:
     q.put(indata[::args.downsample, mapping])
-    # global i
-    # l = len(outdata[:, 0])
-    # print(i, i+l)
-    # if i+l >= len(left_y):
-    #     outdata[:, 0] = np.append(left_y[i:], left_y[:i+l-len(left_y)])
-    #     outdata[:, 1] = np.append(right_y[i:], right_y[:i+l-len(right_y)])
-    #     i = i+l-len(left_y)
-    # else:   
-    #     outdata[:, 0] = left_y[i:i+l]
-    #     outdata[:, 1] = right_y[i:i+l]
-    #     i += l
-    outdata[:] = y
+##    global i
+##    l = len(outdata[:, 0])
+##    if i+l >= len(left_y):
+##        for channel in mapping:
+##            if channel%2 == 0:
+##                outdata[:, channel] = np.append(left_y[i:], left_y[:i+l-len(left_y)])
+##            else:
+##                outdata[:, channel] = np.append(right_y[i:], right_y[:i+l-len(right_y)])
+##        i = i+l-len(left_y)
+##    else:
+##        for channel in mapping:
+##            if channel%2 == 0:
+##                outdata[:, channel] = left_y[i:i+l]
+##            else:
+##                outdata[:, channel] = right_y[i:i+l]
+##        i += l
+##    outdata[:] = y
+
+def callback(outdata, frames, time, status):
+    outdata[:, 0] = left_y
+    outdata[:, 1] = right_y
 
 def update_plot(frame):
     """This is called by matplotlib for each plot update.
@@ -114,22 +128,23 @@ def update_plot(frame):
         try:
             data = q.get_nowait()
             # ind = signal.sosfilt(sos, ind)
+            data = np.append(data, data, axis=1)
             for i in range(data.shape[1]):
-                data[i] = signal.sosfilt(sos, data[i])
+                data[:, i] = signal.sosfilt(sos, data[:, i])
                 if i%2 == 0:
-                    data[i] = signal.correlate(data[i], down_chirp, mode='same')
+                    data[:, i] = signal.correlate(data[:, i], left_y, mode='same')
                 else:
-                    data[i] = signal.correlate(data[i], up_chirp, mode='same')
+                    data[:, i] = signal.correlate(data[:, i], right_y, mode='same')
         except queue.Empty:
             break
         shift = len(data)
-        # print(shift)
+
         plotdata = np.roll(plotdata, -shift, axis=0)
+        
         plotdata[-shift:, :] = data
-    if np.max(plotdata) > 0.25:
-        np.savetxt('plotdata.txt', plotdata)
+    np.savetxt('plotdata.txt', plotdata)
     for column, line in enumerate(lines):
-        line.set_ydata(np.absolute(plotdata[:, column]))
+        line.set_ydata(np.absolute(signal.hilbert(plotdata[:, column])))
     return lines
 
 
@@ -145,28 +160,35 @@ try:
     if args.samplerate is None:
         device_info = sd.query_devices(args.device, 'input')
         args.samplerate = device_info['default_samplerate']
-
+    # length = len(left_y)
     length = int(args.window * args.samplerate / (1000 * args.downsample))
-    # print(length)
+    print(length)
     plotdata = np.zeros((length, len(args.channels)))
+    plotdata = np.append(plotdata, plotdata, axis=1)
 
     fig, ax = plt.subplots()
     lines = ax.plot(plotdata)
-    if len(args.channels) > 1:
-        ax.legend(['channel {}'.format(c) for c in args.channels],
+    # if len(args.channels) > 1:
+    if 1:
+        ax.legend(['channel {}'.format(c) for c in [1, 2]],
                   loc='lower left', ncol=len(args.channels))
-    ax.axis((0, len(plotdata), -1, 1))
+    ax.axis((0, len(plotdata), 0, 1.5))
     # ax.set_yticks([0])
     # ax.yaxis.grid(True)
     # ax.tick_params(bottom='off', top='off', labelbottom='off',
     #                right='off', left='off', labelleft='off')
     fig.tight_layout(pad=0)
 
-    stream = sd.Stream(
-        device=(0, 1), channels=max(args.channels), blocksize=960,
+    stream = sd.InputStream(
+        device=args.device, channels=max(args.channels), blocksize=length,
         samplerate=args.samplerate, callback=audio_callback)
     ani = FuncAnimation(fig, update_plot, interval=args.interval, blit=True)
+
+
     with stream:
-        plt.show()
+        with sd.OutputStream(samplerate=48000, blocksize=length,
+                            channels=2, dtype='float32', device=0,
+                            callback=callback):
+            plt.show()
 except Exception as e:
     parser.exit(type(e).__name__ + ': ' + str(e))
