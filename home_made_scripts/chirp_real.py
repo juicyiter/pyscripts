@@ -107,37 +107,37 @@ def update_plot(frame):
             data = q.get_nowait()
             # ind = signal.sosfilt(sos, ind)
             # data = np.append(data, data, axis=1)
-##            flag = 0
-##            for i in range(data.shape[1]):
-##                data[:, i] = signal.sosfilt(sos, data[:, i])
-##                flag = i%2
-##                if flag == 0:
-##
-##                    data[:, i] = signal.correlate(data[:, i],
-##                                                  up_chirp, mode='same')
-##                else:
-##                    data[:, i] = signal.correlate(data[:, i],
-##                                                  down_chirp, mode='same')
-##                data[:, i] = np.absolute(signal.hilbert(data[:, i]))
-##                pdata = data[:, i]
-##                peaks, _ = signal.find_peaks(pdata, distance=100)
-##                pvalues = pdata[peaks]
-##                max_two_index = pvalues.argsort()[-2:][::-1]
-##                fir, sec = max_two_index[0], max_two_index[1]
-##                if 2*pvalues[sec] > pvalues[fir]:
-##                    distance = np.absolute(peaks[fir] - peaks[sec])
-##                    if distance > 480:
-##                        distance = 960 - distance
-##                    if distance > 200 and distance < 400:
-##                        print('==============================')
-##                        print("Index difference of {}:".format(flag), distance)
-##                        print('==============================')
-##                        print()
-##                        print()
+            flag = 0
+            for i in range(data.shape[1]):
+                data[:, i] = signal.sosfilt(sos, data[:, i])
+                flag = i%2
+                if flag == 0:
+
+                    data[:, i] = signal.correlate(data[:, i],
+                                                  up_chirp, mode='same')
+                else:
+                    data[:, i] = signal.correlate(data[:, i],
+                                                  down_chirp, mode='same')
+                data[:, i] = np.absolute(signal.hilbert(data[:, i]))
+                pdata = data[:, i]
+                peaks, _ = signal.find_peaks(pdata, distance=100)
+                pvalues = pdata[peaks]
+                max_two_index = pvalues.argsort()[-2:][::-1]
+                fir, sec = max_two_index[0], max_two_index[1]
+                if 2*pvalues[sec] > pvalues[fir]:
+                    distance = np.absolute(peaks[fir] - peaks[sec])
+                    if distance > 480:
+                        distance = 960 - distance
+                    if distance > 200 and distance < 400:
+                        print('==============================')
+                        print("Index difference of {}:".format(flag), distance)
+                        print('==============================')
+                        print()
+                        print()
         except queue.Empty:
             break
         shift = len(data)
-        np.savetxt('plotdata.txt', data)
+##        np.savetxt('plotdata.txt', data)
         plotdata = np.roll(plotdata, -shift, axis=0)
 
         plotdata[-shift:, :] = data
