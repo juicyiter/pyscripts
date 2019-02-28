@@ -80,7 +80,7 @@ q = queue.Queue()
 args.samplerate = 48000
 i = 0
 
-
+output_file = open('output.txt', 'w')
 def audio_callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
     if status:
@@ -108,6 +108,7 @@ def update_plot(frame):
             # ind = signal.sosfilt(sos, ind)
             # data = np.append(data, data, axis=1)
             flag = 0
+            
             for i in range(data.shape[1]):
                 data[:, i] = signal.sosfilt(sos, data[:, i])
                 flag = i%2
@@ -120,20 +121,23 @@ def update_plot(frame):
                                                   down_chirp, mode='same')
                 data[:, i] = np.absolute(signal.hilbert(data[:, i]))
                 pdata = data[:, i]
-                peaks, _ = signal.find_peaks(pdata, distance=100)
+                peaks, _ = signal.find_peaks(pdata, distance=50)
                 pvalues = pdata[peaks]
                 max_two_index = pvalues.argsort()[-2:][::-1]
                 fir, sec = max_two_index[0], max_two_index[1]
-                if 2*pvalues[sec] > pvalues[fir]:
-                    distance = np.absolute(peaks[fir] - peaks[sec])
-                    if distance > 480:
-                        distance = 960 - distance
-                    if distance > 200 and distance < 400:
-                        print('==============================')
-                        print("Index difference of {}:".format(flag), distance)
-                        print('==============================')
-                        print()
-                        print()
+##                if 2*pvalues[sec] > pvalues[fir]:
+##                    distance = np.absolute(peaks[fir] - peaks[sec])
+##                    if distance > 480:
+##                        distance = 960 - distance
+##                    if distance > 90 and distance < 100:
+##                        print('==============================')
+##                        print("Index difference of {}:".format(flag), distance)
+##                        print('==============================')
+##                        print()
+##                        print()
+                distance = np.absolute(peaks[fir] - peaks[sec])
+                print(distance, file=output_file)
+                
         except queue.Empty:
             break
         shift = len(data)
@@ -187,5 +191,6 @@ try:
                              channels=2, dtype='float32', device=0,
                              callback=callback):
             plt.show()
+    output_file.close()
 except Exception as e:
     parser.exit(type(e).__name__ + ': ' + str(e))

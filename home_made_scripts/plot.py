@@ -1,7 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import butter, lfilter
-data = np.loadtxt('plotdata.txt')
+
+ch_num = 3
+raw_data = np.genfromtxt('output.txt')
+print(len(raw_data))
+raw_data = np.append(raw_data, np.zeros(ch_num - len(raw_data) % ch_num))
+print(len(raw_data))
+data = raw_data.reshape(-1, ch_num)
 # t = np.linspace(1, 20, 20*48)
 
 # def butter_bandpass(lowcut, highcut, fs, order=5):
@@ -24,7 +30,7 @@ data = np.loadtxt('plotdata.txt')
 fig = plt.figure(1)
 ax = fig.add_subplot(111)
 lines = ax.plot(data)
-ax.legend(['channel {}'.format(c) for c in [0, 1, 2, 3]],
+ax.legend(['channel {}'.format(c) for c in range(ch_num)],
           loc='lower left', ncol=4,
           bbox_to_anchor=(0., 1.02, 1., .102))
 plt.show()
