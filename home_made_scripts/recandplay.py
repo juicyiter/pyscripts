@@ -1,6 +1,5 @@
 import sounddevice as sd
 import time
-import matplotlib.pyplot as plt
 import subprocess
 import numpy as np
 
@@ -10,14 +9,15 @@ f2 = open('../data_dir/right_test1.txt', 'w')
 f3 = open('../data_dir/right_test2.txt', 'w')
 count = 0
 
+
 def show(data):
     global count
-    #plt.ion()
+    # plt.ion()
     print('\n\n')
     print('About to recording next sec...')
     print('Get ready')
     time.sleep(1)
-    
+
     # fig = plt.figure(3)
     # row1 = fig.add_subplot(411, autoscalex_on=True)
     # row2 = fig.add_subplot(412, autoscalex_on=True)
@@ -45,11 +45,12 @@ def show(data):
     # row2.plot(data[:,1])
     # row3.plot(data[:,2])
     # row4.plot(data[:,3])
-    
+
     # fig.canvas.draw()
 
     count += 1
     return 1
+
 
 def plotdata(indata, frames, time, status):
     # print while InputStream calling back
@@ -58,6 +59,7 @@ def plotdata(indata, frames, time, status):
     flag = show(indata)
     if not flag:
         exit(0)
+
 
 with sd.InputStream(blocksize=44100, device=2, channels=4, callback=plotdata):
     play = ['python', 'play.py']

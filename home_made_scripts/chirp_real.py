@@ -17,37 +17,32 @@ def int_or_str(text):
 
 def generate_chirp():
     p = np.poly1d([7, 16])
-    t = np.linspace(0, 1, 1*48)
+    t = np.linspace(0, 1, 1 * 48)
     w = sweep_poly(t, p)
-    w = np.hanning(len(w))*w
+    w = np.hanning(len(w)) * w
     up_chirp = np.copy(w)
     left_y = np.copy(w)
-    right_y = np.zeros(1*48)
-
+    right_y = np.zeros(1 * 48)
     p = np.poly1d([-7, 30])
-    t0 = np.linspace(1, 2, 1*48)
+    t0 = np.linspace(1, 2, 1 * 48)
     t = np.append(t, t0)
     w0 = sweep_poly(t0, p)
-    w0 = np.hanning(len(w0))*w0
+    w0 = np.hanning(len(w0)) * w0
     w = np.append(w, w0)
     down_chirp = np.copy(w0)
     left_y = np.append(left_y, np.zeros(48))
     right_y = np.append(right_y, w0)
-
     return left_y, right_y, up_chirp, down_chirp
 
 
 left_y, right_y, up_chirp, down_chirp = generate_chirp()
-left_y = np.append(left_y, np.zeros(18*48))
+left_y = np.append(left_y, np.zeros(18 * 48))
 pickle.dump(left_y, open('left_y.pickle', 'wb'))
 # right_y = np.append(np.zeros(1*48), y)
-right_y = np.append(right_y, np.zeros(18*48))
+right_y = np.append(right_y, np.zeros(18 * 48))
 pickle.dump(right_y, open('right_y.pickle', 'wb'))
-
 # y = y.reshape(len(y), 1)
 sos = signal.butter(10, [16000, 23000], 'bandpass', fs=48000, output='sos')
-
-
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument(
     '-l', '--list-devices', action='store_true',
@@ -76,11 +71,11 @@ if any(c < 1 for c in args.channels):
     parser.error('argument CHANNEL: must be >= 1')
 mapping = [c - 1 for c in args.channels]  # Channel numbers start with 1
 q = queue.Queue()
-
 args.samplerate = 48000
 i = 0
-
 output_file = open('output.txt', 'w')
+
+
 def audio_callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
     if status:
@@ -96,10 +91,8 @@ def callback(outdata, frames, time, status):
 
 def update_plot(frame):
     """This is called by matplotlib for each plot update.
-
     Typically, audio callbacks happen more frequently than plot updates,
     therefore the queue tends to contain multiple blocks of audio data.
-
     """
     global plotdata, sos, up_chirp, down_chirp, flag
     while True:
@@ -108,12 +101,11 @@ def update_plot(frame):
             # ind = signal.sosfilt(sos, ind)
             # data = np.append(data, data, axis=1)
             flag = 0
-            
+            d_data = np.zeros(args.channels)
             for i in range(data.shape[1]):
                 data[:, i] = signal.sosfilt(sos, data[:, i])
-                flag = i%2
+                flag = i % 2
                 if flag == 0:
-
                     data[:, i] = signal.correlate(data[:, i],
                                                   up_chirp, mode='same')
                 else:
@@ -125,26 +117,25 @@ def update_plot(frame):
                 pvalues = pdata[peaks]
                 max_two_index = pvalues.argsort()[-2:][::-1]
                 fir, sec = max_two_index[0], max_two_index[1]
-##                if 2*pvalues[sec] > pvalues[fir]:
-##                    distance = np.absolute(peaks[fir] - peaks[sec])
-##                    if distance > 480:
-##                        distance = 960 - distance
-##                    if distance > 90 and distance < 100:
-##                        print('==============================')
-##                        print("Index difference of {}:".format(flag), distance)
-##                        print('==============================')
-##                        print()
-##                        print()
-                distance = np.absolute(peaks[fir] - peaks[sec])
-                print(distance, file=output_file)
-                
+                # if 2*pvalues[sec] > pvalues[fir]:
+                #     distance = np.absolute(peaks[fir] - peaks[sec])
+                #     if distance > 480:
+                #         distance = 960 - distance
+                #     if distance > 90 and distance < 100:
+                #         print('==============================')
+                #         print("Index difference of {}:".format(flag),
+                #               distance)
+                #         print('==============================')
+                #         print()
+                #         print()
+                d_data[i] = np.absolute(peaks[fir] - peaks[sec])
+                # print(distance, file=output_file)
         except queue.Empty:
             break
-        shift = len(data)
-##        np.savetxt('plotdata.txt', data)
+        shift = len(d_data)
+# np.savetxt('plotdata.txt', data)
         plotdata = np.roll(plotdata, -shift, axis=0)
-
-        plotdata[-shift:, :] = data
+        plotdata[-shift:, :] = d_data
     for column, line in enumerate(lines):
         line.set_ydata(plotdata[:, column])
     return lines
@@ -155,7 +146,6 @@ try:
     import matplotlib.pyplot as plt
     import numpy as np
     import sounddevice as sd
-
     if args.list_devices:
         print(sd.query_devices())
         parser.exit(0)
@@ -163,11 +153,10 @@ try:
         device_info = sd.query_devices(args.device, 'input')
         args.samplerate = device_info['default_samplerate']
     # length = len(left_y)
-    length = int(args.window * args.samplerate / (1000 * args.downsample))
+    length = int(args.window * args.samplerate/(1000*args.downsample))
     print(length)
     plotdata = np.zeros((length, len(args.channels)))
     # plotdata = np.append(plotdata, plotdata, axis=1)
-
     fig, ax = plt.subplots()
     lines = ax.plot(plotdata)
     # if len(args.channels) > 1:
@@ -180,15 +169,13 @@ try:
     # ax.tick_params(bottom='off', top='off', labelbottom='off',
     #                right='off', left='off', labelleft='off')
     fig.tight_layout(pad=0)
-
     stream = sd.InputStream(
         device=args.device, channels=max(args.channels), blocksize=length,
         samplerate=args.samplerate, callback=audio_callback)
     ani = FuncAnimation(fig, update_plot, interval=args.interval, blit=True)
-
     with stream:
         with sd.OutputStream(samplerate=48000, blocksize=length,
-                             channels=2, dtype='float32', device=0,
+                             channels=2, dtype='float32', device=1,
                              callback=callback):
             plt.show()
     output_file.close()
