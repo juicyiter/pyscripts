@@ -37,10 +37,10 @@ def generate_chirp():
 
 left_y, right_y, up_chirp, down_chirp = generate_chirp()
 left_y = np.append(left_y, np.zeros(18 * 48))
-pickle.dump(left_y, open('left_y.pickle', 'wb'))
+# pickle.dump(left_y, open('left_y.pickle', 'wb'))
 # right_y = np.append(np.zeros(1*48), y)
 right_y = np.append(right_y, np.zeros(18 * 48))
-pickle.dump(right_y, open('right_y.pickle', 'wb'))
+# pickle.dump(right_y, open('right_y.pickle', 'wb'))
 # y = y.reshape(len(y), 1)
 sos = signal.butter(10, [16000, 23000], 'bandpass', fs=48000, output='sos')
 parser = argparse.ArgumentParser(description=__doc__)
@@ -73,7 +73,7 @@ mapping = [c - 1 for c in args.channels]  # Channel numbers start with 1
 q = queue.Queue()
 args.samplerate = 48000
 i = 0
-output_file = open('output.txt', 'w')
+# output_file = open('output.txt', 'w')
 
 
 def audio_callback(indata, frames, time, status):
@@ -101,7 +101,7 @@ def update_plot(frame):
             # ind = signal.sosfilt(sos, ind)
             # data = np.append(data, data, axis=1)
             flag = 0
-            d_data = np.zeros(args.channels)
+            d_data = np.zeros(len(args.channels))
             for i in range(data.shape[1]):
                 data[:, i] = signal.sosfilt(sos, data[:, i])
                 flag = i % 2
@@ -132,8 +132,7 @@ def update_plot(frame):
                 # print(distance, file=output_file)
         except queue.Empty:
             break
-        shift = len(d_data)
-# np.savetxt('plotdata.txt', data)
+        shift = 1
         plotdata = np.roll(plotdata, -shift, axis=0)
         plotdata[-shift:, :] = d_data
     for column, line in enumerate(lines):
@@ -159,11 +158,11 @@ try:
     # plotdata = np.append(plotdata, plotdata, axis=1)
     fig, ax = plt.subplots()
     lines = ax.plot(plotdata)
-    # if len(args.channels) > 1:
-    if 1:
-        ax.legend(['channel {}'.format(c) for c in [1, 2]],
+    if len(args.channels) > 1:
+    # if 1:
+        ax.legend(['channel {}'.format(c) for c in mapping],
                   loc='lower left', ncol=len(args.channels))
-    ax.axis((0, len(plotdata), 0, 1.5))
+    ax.axis((0, len(plotdata), 0, 1000))
     # ax.set_yticks([0])
     # ax.yaxis.grid(True)
     # ax.tick_params(bottom='off', top='off', labelbottom='off',
@@ -175,7 +174,7 @@ try:
     ani = FuncAnimation(fig, update_plot, interval=args.interval, blit=True)
     with stream:
         with sd.OutputStream(samplerate=48000, blocksize=length,
-                             channels=2, dtype='float32', device=1,
+                             channels=2, dtype='float32', device=0,
                              callback=callback):
             plt.show()
     output_file.close()
