@@ -1,0 +1,5 @@
+#+TITLE: Python Related
+#+AUTHOR: Mengoreo
+#+EMAIL: mengoreo@163.com
+
+Some juice while learning python.

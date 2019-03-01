@@ -4,7 +4,7 @@ import sys
 import numpy as np
 from scipy.signal.waveforms import sweep_poly
 from scipy import signal
-import pickle
+# import pickle
 
 
 def int_or_str(text):
@@ -152,14 +152,13 @@ try:
         device_info = sd.query_devices(args.device, 'input')
         args.samplerate = device_info['default_samplerate']
     # length = len(left_y)
-    length = int(args.window * args.samplerate/(1000*args.downsample))
+    length = int(args.window * args.samplerate / (1000 * args.downsample))
     print(length)
     plotdata = np.zeros((length, len(args.channels)))
     # plotdata = np.append(plotdata, plotdata, axis=1)
     fig, ax = plt.subplots()
     lines = ax.plot(plotdata)
     if len(args.channels) > 1:
-    # if 1:
         ax.legend(['channel {}'.format(c) for c in mapping],
                   loc='lower left', ncol=len(args.channels))
     ax.axis((0, len(plotdata), 0, 1000))
@@ -174,9 +173,9 @@ try:
     ani = FuncAnimation(fig, update_plot, interval=args.interval, blit=True)
     with stream:
         with sd.OutputStream(samplerate=48000, blocksize=length,
-                             channels=2, dtype='float32', device=0,
+                             channels=2, dtype='float32', device=1,
                              callback=callback):
             plt.show()
-    output_file.close()
+    # output_file.close()
 except Exception as e:
     parser.exit(type(e).__name__ + ': ' + str(e))
