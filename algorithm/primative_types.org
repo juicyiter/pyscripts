@@ -1,0 +1,81 @@
+#+TITILE:   Primative Types
+#+AUTHOR:   Ethan Mengoreo
+#+EMAIL:    mengoreo@163.com
+#+STARTUP:  indent
+#+LANGUAGE: en
+#+OPTIONS:  toc:t num:0
+# #+SETUPFILE: https://raw.githubusercontent.com/mengoreo/myscripts/master/theme-readtheorg.setup
+
+* Top Tips for Primative Types
+#+BEGIN_QUOTE
+Be very comfortable with *bitwise operators*, particularly *XOR*.
+
+Understand how to use *masks* and create them in an *machine independent* way
+
+Know how fast ways to *clear the lowermost set bit* (and by extension, set the lowermost 0, get its index, etc.)
+
+Understand *signedness* and its implications to *shifting*
+
+Consider using a *cache* to accelerate operations by using it to brute-force small inputs
+
+Be aware that *commutativity* and *associativity* can be used to perform operations in *parallel* and *reorder* operations.
+#+END_QUOTE
+
+* Compute The Parity of A Word
+#+BEGIN_SRC python
+def parity(x):
+    result = 0
+    while x:
+        result ^= 1
+        # set the lowest set to 0
+        x &= x - 1
+    return result
+#+END_SRC
+
+#+RESULTS:
+: None
+
+#+BEGIN_QUOTE
+The time complexity is $O(k)$ where $k$ is the number of 1s in $x$
+#+END_QUOTE
+
+Using cache.
+#+BEGIN_SRC python
+def parity(x):
+    # assume word is 64 bit long
+    # and their parities all precomputed
+    MAX_SIZE = 16
+    BIT_MASK = 0xFFFF
+    return PRECOMPUTED_PARITY[x >> (3 * MAX_SIZE)] ^\
+           PRECOMPUTED_PARITY[(x >> (2 * MAX_SIZE)) & BIT_MASK] ^\
+           PRECOMPUTED_PARITY[(x >> MAX_SIZE) & BIT_MASK] ^\
+           PRECOMPUTED_PARITY[ x & BIT_MASK]
+#+END_SRC
+
+*Bitwise XOR* is commutative and associative.
+#+BEGIN_SRC python
+# assume 64 bit
+def parity(x):
+    x ^= x >> 32
+    x ^= x >> 16
+    x ^= x >> 8
+    x ^= x >> 4
+    x ^= x >> 2
+    x ^= x >> 1
+    # leading bits are meaningless
+    return x & 0x1
+#+END_SRC
+
+* Swap Bits
+#+BEGIN_SRC python
+def swap_bits(x, i, j):
+    # Extract the i-th and j-th bit, check if they differ
+    if (x >> i) & 0x1 != (x >> j) & 0x1:
+        # if they differ, then swaping bits is same as
+        # flipping their values
+        # Select the bits to flip with bit_mask. Since x ^ 1 = 0 when x = 1
+        # and 1 when x = 0. We can flip with XOR
+        bit_mask = (1 << i) | (1 << j)
+        x ^= bit_maks
+    return x
+#+END_SRC
