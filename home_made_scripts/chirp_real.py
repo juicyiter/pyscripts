@@ -73,7 +73,6 @@ mapping = [c - 1 for c in args.channels]  # Channel numbers start with 1
 q = queue.Queue()
 args.samplerate = 48000
 i = 0
-# output_file = open('output.txt', 'w')
 
 
 def audio_callback(indata, frames, time, status):
@@ -94,7 +93,7 @@ def update_plot(frame):
     Typically, audio callbacks happen more frequently than plot updates,
     therefore the queue tends to contain multiple blocks of audio data.
     """
-    global plotdata, sos, up_chirp, down_chirp, flag
+    global plotdata, sos, up_chirp, down_chirp, flag, out_data
     while True:
         try:
             data = q.get_nowait()
@@ -112,29 +111,32 @@ def update_plot(frame):
                     data[:, i] = signal.correlate(data[:, i],
                                                   down_chirp, mode='same')
                 data[:, i] = np.absolute(signal.hilbert(data[:, i]))
-                pdata = data[:, i]
-                peaks, _ = signal.find_peaks(pdata, distance=50)
-                pvalues = pdata[peaks]
-                max_two_index = pvalues.argsort()[-2:][::-1]
-                fir, sec = max_two_index[0], max_two_index[1]
-                # if 2*pvalues[sec] > pvalues[fir]:
-                #     distance = np.absolute(peaks[fir] - peaks[sec])
-                #     if distance > 480:
-                #         distance = 960 - distance
-                #     if distance > 90 and distance < 100:
-                #         print('==============================')
-                #         print("Index difference of {}:".format(flag),
-                #               distance)
-                #         print('==============================')
-                #         print()
-                #         print()
-                d_data[i] = np.absolute(peaks[fir] - peaks[sec])
+##                pdata = data[:, i]
+##                peaks, _ = signal.find_peaks(pdata, distance=50)
+##                pvalues = pdata[peaks]
+##                max_two_index = pvalues.argsort()[-2:][::-1]
+##                fir, sec = max_two_index[0], max_two_index[1]
+##                # if 2*pvalues[sec] > pvalues[fir]:
+##                #     distance = np.absolute(peaks[fir] - peaks[sec])
+##                #     if distance > 480:
+##                #         distance = 960 - distance
+##                #     if distance > 90 and distance < 100:
+##                #         print('==============================')
+##                #         print("Index difference of {}:".format(flag),
+##                #               distance)
+##                #         print('==============================')
+##                #         print()
+##                #         print()
+                # d_data[i] = np.absolute(peaks[fir] - peaks[sec])
                 # print(distance, file=output_file)
         except queue.Empty:
             break
-        shift = 1
+##        shift = 1
+        shift = len(data)
+        out_data = np.append(out_data, data, axis=0)
         plotdata = np.roll(plotdata, -shift, axis=0)
-        plotdata[-shift:, :] = d_data
+##        plotdata[-shift:, :] = d_data
+        plotdata[-shift:, :] = data
     for column, line in enumerate(lines):
         line.set_ydata(plotdata[:, column])
     return lines
@@ -155,6 +157,7 @@ try:
     length = int(args.window * args.samplerate/(1000*args.downsample))
     print(length)
     plotdata = np.zeros((length, len(args.channels)))
+    out_data = np.zeros((length, len(args.channels)))
     # plotdata = np.append(plotdata, plotdata, axis=1)
     fig, ax = plt.subplots()
     lines = ax.plot(plotdata)
@@ -162,7 +165,7 @@ try:
     # if 1:
         ax.legend(['channel {}'.format(c) for c in mapping],
                   loc='lower left', ncol=len(args.channels))
-    ax.axis((0, len(plotdata), 0, 1000))
+    ax.axis((0, len(plotdata), 0, 1))
     # ax.set_yticks([0])
     # ax.yaxis.grid(True)
     # ax.tick_params(bottom='off', top='off', labelbottom='off',
@@ -177,6 +180,7 @@ try:
                              channels=2, dtype='float32', device=0,
                              callback=callback):
             plt.show()
-    output_file.close()
+    with open('out.pickle', 'wb') as f:
+        pickle.dump(out_data, f)
 except Exception as e:
     parser.exit(type(e).__name__ + ': ' + str(e))
